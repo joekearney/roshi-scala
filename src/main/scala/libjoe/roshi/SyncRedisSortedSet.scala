@@ -59,9 +59,10 @@ class RedisLwwElementSet(private val redisConnection: RedisClient, maxSize: Int)
     val keys = List(ksm.key)
     val args = List(ksm.score, ksm.member, maxSize)
 
-    def tryEval: Unit = {
+    def tryEval: Boolean = {
       try {
         val r = redisConnection evalSHA[String](script.hash, keys, args)
+        r.map(_.toInt).getOrElse(-1) > 0
       } catch {
         case e: Exception if (e.getMessage startsWith "NOSCRIPT") => {
           val hash = redisConnection scriptLoad script.text
@@ -70,7 +71,6 @@ class RedisLwwElementSet(private val redisConnection: RedisClient, maxSize: Int)
       }
     }
     tryEval
-    true
   }
   override def insert(ksm: KeyScoreMember): Boolean = send(insertScript, ksm)
   override def delete(ksm: KeyScoreMember): Boolean = send(deleteScript, ksm)

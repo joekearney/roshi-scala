@@ -35,7 +35,7 @@ trait LwwElementSetSpec extends FlatSpec with Matchers {
   it should "have an element present after adding and then seeing an earlier removal" in {
     val farm = createFarm
     assert(farm insert (KeyScoreMember(KEY, 3.0, "a")))
-    farm.delete(KeyScoreMember(KEY, 2.0, "a"))
+    assert(!farm.delete(KeyScoreMember(KEY, 2.0, "a")))
     val items = farm.select(KEY) map (_.member)
     assert(items.size == 1)
     assert(items contains "a")
